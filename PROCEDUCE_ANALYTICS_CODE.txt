@@ -1,0 +1,31 @@
+DECLARE @StartDate DATE, @EndDate DATE;
+
+-- Create a temporary table to store the results
+CREATE TABLE #Results (
+    StartDate DATE,
+    EndDate DATE,
+    SO_VIN INT
+);
+
+SET @StartDate = DATEADD(YEAR, -10, DATEADD(DAY, 1, EOMONTH(DATEADD(MONTH, -1, GETDATE()))));
+SET @EndDate = DATEADD(DAY, -1, EOMONTH(GETDATE()));
+
+WHILE @StartDate <= @EndDate AND YEAR(@StartDate) < YEAR(GETDATE())
+BEGIN
+    INSERT INTO #Results (StartDate, SO_VIN, EndDate)
+    SELECT
+        @StartDate AS StartDate,
+	DATEADD(YEAR, 1, @StartDate) AS EndDate,
+	COUNT(ID) AS SO_XE
+    FROM [dbo].[MUAHANG]
+    WHERE NGAYMUA >= @StartDate AND NGAYMUA <= @EndDate;
+
+    SET @StartDate = DATEADD(YEAR, 1, @StartDate);
+END
+
+-- Select all rows from the temporary table
+SELECT *
+FROM #Results;
+
+-- Drop the temporary table
+DROP TABLE #Results;
